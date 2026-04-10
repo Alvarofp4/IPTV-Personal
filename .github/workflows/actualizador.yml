@@ -1,0 +1,33 @@
+name: Generador Dinámico IPTV
+
+# Cuándo se ejecuta este pipeline
+on:
+  schedule:
+    - cron: '0 4 * * *' # Todos los días a las 04:00 AM UTC
+  workflow_dispatch: # Activa un botón para que podamos forzar la ejecución manual ahora mismo
+
+# Qué hace el pipeline
+jobs:
+  compilar_lista:
+    runs-on: ubuntu-latest # Usamos una máquina Linux limpia de GitHub
+    
+    steps:
+      - name: 1. Clonar el repositorio
+        uses: actions/checkout@v3
+
+      - name: 2. Configurar entorno Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: 3. Ejecutar motor ETL
+        run: python generador.py
+
+      - name: 4. Guardar los resultados en el repositorio
+        run: |
+          git config --global user.name 'Bot Automatizado'
+          git config --global user.email 'bot@tuservidor.com'
+          git add mi_lista_personalizada.m3u
+          # Si no hay cambios nuevos, no da error, simplemente sale con éxito (exit 0)
+          git commit -m "Actualización automática de nodos de red" || exit 0
+          git push
